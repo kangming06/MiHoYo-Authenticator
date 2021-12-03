@@ -3,7 +3,7 @@ plugins {
     id("com.android.application")
 }
 
-val vCompose = "1.1.0-alpha06"
+val vCompose = "1.1.0-beta03"
 
 android {
 
@@ -13,8 +13,8 @@ android {
         applicationId = "hat.auth"
         minSdk = 26
         targetSdk = 31
-        versionCode = 4
-        versionName = "1.1.1"
+        versionCode = 5
+        versionName = "1.1.2"
         multiDexEnabled = true
         resourceConfigurations.apply {
             clear()

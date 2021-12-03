@@ -99,8 +99,7 @@ fun Random.nextString(length: Int): String {
 }
 
 fun String.digest(algorithm: String): String = MessageDigest.getInstance(algorithm).run {
-    update(toByteArray())
-    BigInteger(1,digest()).toString(16)
+    BigInteger(1,digest(toByteArray())).toString(16).padStart(32,'0')
 }
 
 private val CustomExclusionStrategy = object : ExclusionStrategy {

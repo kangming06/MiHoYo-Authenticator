@@ -117,12 +117,13 @@ fun TopAppBar(
         }
     }
     LaunchedEffect(Unit) {
-        if (!BuildConfig.DEBUG) {
-            checkUpdate {
-                if (it.name != BuildConfig.VERSION_NAME) {
-                    pointVisibility = true
-                }
+        //if (!BuildConfig.DEBUG) {
+        checkUpdate {
+            lastVer = it
+            if (it.name != BuildConfig.VERSION_NAME) {
+                pointVisibility = true
             }
         }
+        //}
     }
 }

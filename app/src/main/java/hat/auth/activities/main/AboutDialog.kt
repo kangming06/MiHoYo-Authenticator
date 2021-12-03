@@ -11,15 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import hat.auth.BuildConfig
 import hat.auth.activities.MainActivity
 import hat.auth.utils.*
 
+var lastVer = ReleaseInfo()
+
 private var versionName = BuildConfig.VERSION_NAME
-private var versionTitle by mutableStateOf(AnnotatedString("正在检查更新..."))
-private var versionText  by mutableStateOf(versionName)
 
 private var isDialogShowing by mutableStateOf(false)
 
@@ -48,8 +50,19 @@ private fun MainActivity.AD() = Dialog(
             )
     ) {
         Component(
-            title = versionTitle,
-            text = versionText
+            title = if (lastVer.name != versionName) {
+                buildAnnotatedString {
+                    pushStyle(SpanStyle(Color(0xFFEF5350)))
+                    append("有可用更新，点击跳转至浏览器下载\n")
+                    pop()
+                    pushStyle(SpanStyle(fontSize = 14.sp))
+                    append("新版本更新内容:\n${lastVer.body}")
+                    pop()
+                }
+            } else {
+                AnnotatedString("已经是最新版本", SpanStyle(Color(0xFF66BB6A)))
+            },
+            text = if (lastVer.name != versionName) null else versionName
         ) {
             if (currentReleaseInfo.name != versionName) {
                 openWebPage(currentReleaseInfo.url)
@@ -74,20 +87,6 @@ private fun MainActivity.AD() = Dialog(
             openWebPage("$REPO_URL/pulls")
         }
     }
-    LaunchedEffect(Unit) {
-        checkUpdate(
-            onFailure = {
-                versionTitle = AnnotatedString("出现错误，请稍后重试")
-            }
-        ) {
-            if (it.name != versionName) {
-                versionTitle = AnnotatedString("有可用更新，点击下载", SpanStyle(Color(0xFFEF5350)))
-                versionText = "$versionName -> ${it.name}"
-            } else {
-                versionTitle = AnnotatedString("已经是最新版本", SpanStyle(Color(0xFF66BB6A)))
-            }
-        }
-    }
 }
 
 @Composable
@@ -100,7 +99,7 @@ private fun Component(
 @Composable
 private fun Component(
     title: AnnotatedString,
-    text: String,
+    text: String?,
     onClick:() -> Unit
 ) {
     Box(
@@ -112,7 +111,7 @@ private fun Component(
             modifier = Modifier.padding(15.dp)
         ) {
             Text(title,style = MaterialTheme.typography.subtitle1)
-            Text(text,style = MaterialTheme.typography.body2)
+            text?.let { Text(it,style = MaterialTheme.typography.body2) }
         }
     }
 }

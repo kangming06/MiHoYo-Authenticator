@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 
 var currentReleaseInfo by mutableStateOf(ReleaseInfo())
 
-private const val UPDATE_URL = "https://api.github.com/repos/HolographicHat/MiHoYo-Authenticator/releases/latest"
+private const val UPDATE_URL = "https://hoyoauth-android-update.holographichat.workers.dev/"
 
 fun checkUpdate(
     onFailure: (Throwable) -> Unit = {},
@@ -21,7 +21,8 @@ fun checkUpdate(
                 ReleaseInfo(
                     name = it["tag_name"].asString,
                     pkgName = pkg["name"].asString,
-                    url = pkg["browser_download_url"].asString
+                    url = pkg["browser_download_url"].asString,
+                    body = it["body"].asString
                 ).also { r ->
                     currentReleaseInfo = r
                 }
@@ -33,5 +34,6 @@ fun checkUpdate(
 data class ReleaseInfo(
     val name: String = BuildConfig.VERSION_NAME,
     val pkgName: String = "null",
-    val url: String = "null"
+    val url: String = "null",
+    val body: String = "null"
 )
