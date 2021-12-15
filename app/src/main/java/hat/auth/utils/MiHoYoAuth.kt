@@ -2,6 +2,7 @@ package hat.auth.utils
 
 import hat.auth.data.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 object MiHoYoAuth {
@@ -22,9 +23,14 @@ object MiHoYoAuth {
         /* 通过登录凭据获取两份令牌(ltoken,stoken) */
         user = MiHoYoAPI.getMultiTokenByLoginTicket(user)
         /* 获取米游社个人信息(头像Url) */
-        val avatar = MiHoYoAPI.getAvatar(user)
+        val a = async {
+            runCatching {
+                MiHoYoAPI.getAvatar(user)
+            }.getOrNull() ?: "https://img-static.mihoyo.com/avatar/avatar1.png"
+        }
         /* 获取玩家信息(UID,昵称) */
-        val profile = MiHoYoAPI.getUserGameRolesByCookie(user).getOrNull(0)
+        val b = async { MiHoYoAPI.getUserGameRolesByCookie(user).getOrNull(0) }
+        val (profile, avatar) = b.await() to a.await()
         checkNotNull(profile) { "空账号" }
         user.copy(
             guid = profile.uid,
@@ -48,11 +54,14 @@ object MiHoYoAuth {
         /* 通过登录凭据获取两份令牌(ltoken,stoken) */
         user = MiHoYoAPI.getMultiTokenByLoginTicket(user)
         /* 获取米游社个人信息(头像Url) */
-        val avatar = with(MiHoYoAPI.getUserFullInfo(user)) {
-            getAsJsonObject("user_info")["avatar_url"].asString
+        val a = async {
+            runCatching {
+                MiHoYoAPI.getAvatar(user)
+            }.getOrNull() ?: "https://img-static.mihoyo.com/avatar/avatar1.png"
         }
         /* 获取玩家信息(UID,昵称) */
-        val profile = MiHoYoAPI.getUserGameRolesByCookie(user).getOrNull(0)
+        val b = async { MiHoYoAPI.getUserGameRolesByCookie(user).getOrNull(0) }
+        val (profile, avatar) = b.await() to a.await()
         checkNotNull(profile) { "空账号" }
         /* 创建Account对象并返回 */
         user.copy(

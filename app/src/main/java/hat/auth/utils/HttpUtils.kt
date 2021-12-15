@@ -87,7 +87,9 @@ fun FormBody.Builder.addCaptchaData(data: CaptchaData) = apply {
 
 fun ResponseBody.bitmap() = BitmapFactory.decodeStream(byteStream())!!
 
-/** https://github.com/Azure99/GenshinPlayerQuery/blob/a8553e794cb9df4e379586413ed590a88bec4c11/src/Core/GenshinAPI.cs **/
+/**
+ * Reference: [GitHub](https://git.io/JDgUj)
+ * **/
 const val BBS_SALT = "xV8v4Qu54lUKrEYFZkJhB8cuOh9Asafs"
 const val BBS_VERSION = "2.11.1"
 const val BBS_CTYPE = "5"

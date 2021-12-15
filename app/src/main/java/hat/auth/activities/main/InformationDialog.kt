@@ -122,7 +122,11 @@ private fun MainActivity.IND() = Dialog(
                 )
                 Oculi(
                     resId = R.drawable.ic_mora,
-                    text = "$currentMora (${moraRate}%)",
+                    text = if (currentMora == moraRate * 100) {
+                        "$currentMora"
+                    } else {
+                        "$currentMora (${moraRate}%)"
+                    },
                     horizontalSpacedBy = 5.dp,
                     size = 24.dp
                 )

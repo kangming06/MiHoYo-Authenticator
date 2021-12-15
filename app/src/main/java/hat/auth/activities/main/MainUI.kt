@@ -25,6 +25,8 @@ import hat.auth.utils.*
 import hat.auth.utils.TapAPI.confirm
 import hat.auth.utils.TapAPI.getPage
 import hat.auth.utils.ui.CircularProgressDialog
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
@@ -89,12 +91,14 @@ fun MainActivity.UI() {
                             isLoadingDialogShowing = true
                             runCatching {
                                 val mA = currentAccount as MiAccount
-                                val dn = MiHoYoAPI.getDailyNote(mA)
-                                val gr = MiHoYoAPI.getGameRecord(mA)
-                                val jn = with(MiHoYoAPI.getCookieToken(mA.uid,mA.sToken)) {
-                                    MiHoYoAPI.getJournalNote(mA,this)
+                                coroutineScope {
+                                    val dn = async { MiHoYoAPI.getDailyNote(mA) }
+                                    val gr = async { MiHoYoAPI.getGameRecord(mA) }
+                                    val jn = async { with(MiHoYoAPI.getCookieToken(mA.uid,mA.sToken)) {
+                                        MiHoYoAPI.getJournalNote(mA,this)
+                                    } }
+                                    showInfoDialog(dn.await(),gr.await(),jn.await())
                                 }
-                                showInfoDialog(dn,gr,jn)
                             }.onFailure {
                                 processException(it)
                             }
