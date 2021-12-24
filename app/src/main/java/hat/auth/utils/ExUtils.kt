@@ -1,6 +1,7 @@
 package hat.auth.utils
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -62,8 +63,8 @@ fun getDrawableAsBitmap(@DrawableRes resId: Int) =
 
 fun getDrawableAsImageBitmap(@DrawableRes resId: Int) = getDrawableAsBitmap(resId).asImageBitmap()
 
-fun Activity.startAnalytics() {
-    AppCenter.start(application,BuildConfig.APP_CENTER_KEY,Analytics::class.java,Crashes::class.java)
+fun Context.startAnalytics() {
+    AppCenter.start(applicationContext as Application,BuildConfig.APP_CENTER_KEY,Analytics::class.java,Crashes::class.java)
 }
 
 fun Activity.toast(

@@ -13,8 +13,8 @@ android {
         applicationId = "hat.auth"
         minSdk = 26
         targetSdk = 31
-        versionCode = 5
-        versionName = "1.1.2"
+        versionCode = 7
+        versionName = "1.1.4"
         multiDexEnabled = true
         resourceConfigurations.apply {
             clear()
@@ -90,6 +90,11 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.4.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha03")
+    implementation("com.google.crypto.tink:tink-android") {
+        version {
+            strictly("1.4.0")
+        }
+    }
 
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.2")
     implementation("com.github.skydoves:landscapist-coil:1.4.0")

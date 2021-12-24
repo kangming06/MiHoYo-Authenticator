@@ -2,7 +2,6 @@ package hat.auth
 
 import android.content.Context
 import android.os.Build
-import android.os.StrictMode
 import hat.auth.utils.Log
 import java.io.File
 import java.io.Serializable

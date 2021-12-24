@@ -6,6 +6,7 @@ import android.os.StrictMode
 import hat.auth.utils.apply
 import hat.auth.utils.buildThreadPolicy
 import hat.auth.utils.buildVmPolicy
+import hat.auth.utils.startAnalytics
 
 @Suppress("unused")
 class Application : Application() {
@@ -39,7 +40,7 @@ class Application : Application() {
                 penaltyLog()
             }.apply()
             StrictMode.noteSlowCall("SlowOperation")
-            CrashHandler(this)
+            //CrashHandler(this)
         }
     }
 

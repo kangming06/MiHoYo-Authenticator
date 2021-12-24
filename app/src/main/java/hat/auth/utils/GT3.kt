@@ -13,7 +13,7 @@ private var mmtKey = ""
 
 object GT3 {
 
-    private lateinit var utils: GT3GeetestUtils
+    private var utils: GT3GeetestUtils? = null
 
     private val config = GT3ConfigBean().apply {
         pattern = 1
@@ -22,10 +22,10 @@ object GT3 {
 
     fun getConfig() = config
 
-    fun getGeetest() = utils.getGeetest()
+    fun getGeetest() = utils!!.getGeetest()
 
     fun onDestroy() {
-        utils.destory()
+        utils?.destory()
     }
 
     fun Activity.initGeetest() = ioScope.launch {
@@ -40,7 +40,7 @@ object GT3 {
                     mmtKey = it["mmt_key"].asString
                     config.api1Json = it.toOrgJson()
                 }
-                utils.getGeetest()
+                utils!!.getGeetest()
             }.onFailure {
                 Log.e("Exception","h.a.u.GT3:L34 ",it)
                 ctx.toast(it.message ?: "未知错误")
@@ -74,11 +74,11 @@ object GT3 {
 
     fun GT3ListenerEx.start() {
         config.listener = this
-        utils.init(config)
-        utils.startCustomFlow()
+        utils!!.init(config)
+        utils!!.startCustomFlow()
     }
 
-    fun dismissGeetestDialog() = utils.dismissGeetestDialog()
+    fun dismissGeetestDialog() = utils!!.dismissGeetestDialog()
 
 }
 

@@ -13,10 +13,9 @@ object MiHoYoAPI {
     private const val SDKAPI = "https://api-sdk.mihoyo.com"
     private const val HK4API = "https://hk4e-api.mihoyo.com"
     private const val WEBAPI = "https://webapi.account.mihoyo.com/Api"
+    private const val RECAPI = "https://api-takumi-record.mihoyo.com/game_record/app"
     private const val TAKUMI_AUTH_API = "https://api-takumi.mihoyo.com/auth/api"
     private const val TAKUMI_BINDING_API = "https://api-takumi.mihoyo.com/binding/api"
-    private const val TAKUMI_GC = "https://api-takumi.mihoyo.com/game_record"
-    private const val TAKUMI_GCP = "https://api-takumi.mihoyo.com/game_record/app"
 
     suspend fun createMMT() = getJson(
         url = "$WEBAPI/create_mmt",
@@ -165,14 +164,14 @@ object MiHoYoAPI {
     }
 
     // TODO: Fix
-    suspend fun changeDataSwitch(gid: Int,sid: Int,to: Boolean,sign: Boolean = false) {
-        val u = "$TAKUMI_GC/card/wapi/changeDataSwitch"
+    suspend fun changeDataSwitch(gid: Int,sid: Int,to: Boolean/*,sign: Boolean = false*/) {
+        val u = "$RECAPI/card/wapi/changeDataSwitch"
         val p = arrayOf(
             "game_id" to gid,
             "is_public" to to,
             "switch_id" to sid
         )
-        if (sign) {
+        /*if (sign) {
             val b = mapOf("preParams" to false,*p,"baseURL" to TAKUMI_GC).toJson()
             val s = createDynamicSecret(u,b)
             getJson(
@@ -194,27 +193,27 @@ object MiHoYoAPI {
                     "Referer" to "https://webstatic.mihoyo.com/app/community-game-records/index.html?bbs_presentation_style=fullscreen"
                 ),
             ).checkRetCode()
-        } else {
-            getJson(
-                url = u,
-                client = OkClients.SAPI,
-                headers = mapOf(
-                    "User-Agent" to "Mozilla/5.0 (Linux; Android 12; Phone Build/000; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.101 Mobile Safari/537.36 miHoYoBBS/2.12.1",
-                    "Origin" to "https://webstatic.mihoyo.com",
-                    "Referer" to "https://webstatic.mihoyo.com/app/community-game-records/index.html?bbs_presentation_style=fullscreen"
-                ),
-                postBody = jsonBodyOf(*p)
-            ).checkRetCode()
-        }
+        } else {*/
+        getJson(
+            url = u,
+            client = OkClients.SAPI,
+            headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Linux; Android 12; Phone Build/000) miHoYoBBS/2.18.0",
+                "Origin" to "https://webstatic.mihoyo.com",
+                "Referer" to "https://webstatic.mihoyo.com/app/community-game-records/index.html?bbs_presentation_style=fullscreen"
+            ),
+            postBody = jsonBodyOf(*p)
+        ).checkRetCode()
+        //}
     }
 
     suspend fun getDailyNote(u: MiAccount) = getJson(
-        url = "$TAKUMI_GCP/genshin/api/dailyNote?server=cn_gf01&role_id=${u.guid}",
+        url = "$RECAPI/genshin/api/dailyNote?server=cn_gf01&role_id=${u.guid}",
         client = OkClients.SAPI
     ).checkRetCode().toDataClass(DailyNote::class.java)
 
     suspend fun getGameRecord(u: MiAccount) = getJson(
-        url = "$TAKUMI_GCP/genshin/api/index?server=cn_gf01&role_id=${u.guid}",
+        url = "$RECAPI/genshin/api/index?server=cn_gf01&role_id=${u.guid}",
         client = OkClients.SAPI
     ).checkRetCode().toDataClass(GameRecord::class.java)
 
