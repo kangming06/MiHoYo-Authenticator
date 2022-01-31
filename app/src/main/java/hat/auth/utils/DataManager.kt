@@ -1,9 +1,9 @@
 package hat.auth.utils
 
+import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.google.gson.JsonObject
 import hat.auth.Application.Companion.context
 import hat.auth.data.IAccount
 import hat.auth.data.MiAccount
@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 
@@ -23,8 +24,12 @@ private val dataDir by lazy {
     context.getDir("accounts",Context.MODE_PRIVATE)
 }
 
-fun loadAccountList() = ioScope.launch {
-    migrate()
+fun loadAccountList(activity: Activity) = ioScope.launch {
+    try {
+        migrate()
+    } catch (e: IOException) {
+        activity.toast("账号数据加载失败: ${e.message}")
+    }
 }
 
 suspend fun refreshAccount() {
@@ -93,39 +98,28 @@ infix fun IAccount.removeFrom(list: SnapshotStateList<IAccount>) = getFile().del
 }
 
 suspend fun decryptAll() = withContext(Dispatchers.IO) {
-    dataDir.listFiles()?.forEach {
-        File(dataDir,"d_${it.name}").run {
+    dataDir.listFiles()?.filterNot { it.nameWithoutExtension.startsWith("decrypted_") }?.forEach {
+        File(dataDir,"decrypted_${it.name}").run {
+            Log.d("DataManager", "File ${it.name} decrypt.")
             createNewFile()
             writeText(it.asEncryptedFile().readText())
         }
+        it.delete()
     }
 }
 
-private suspend fun migrate() {
-    val files = dataDir.listFiles()?.also {
-        it.sortBy { f -> f.getCreationTime() }
-    }
-    if (files?.getOrNull(0)?.nameWithoutExtension?.toIntOrNull() != null) {
-        files.forEach {
-            val old = it.asEncryptedFile().readText()
-            val a = gson.fromJson(old,JsonObject::class.java)
-            val b = a.getAsJsonObject("tokens")
-            val nA = MiAccount(
-                uid = a["uid"].asString,
-                guid = a["guid"].asString,
-                name = a["name"].asString,
-                ticket = a["ticket"].asString,
-                lToken = b["lToken"].asString,
-                sToken = b["sToken"].asString,
-                avatar = a["aUrl"].asString
-            )
-            Log.i("Migrate", a["uid"].asString)
-            nA addTo accountList
+private fun migrate() {
+    val df = dataDir.listFiles()?.filter { f -> f.nameWithoutExtension.startsWith("decrypted_") }
+    if (df?.isNotEmpty() == true) {
+        df.forEach {
+            Log.d("DataManager", "File ${it.name} re-encrypt.")
+            File(dataDir, it.nameWithoutExtension.removePrefix("decrypted_")).asEncryptedFile().writeText(it.readText())
             it.delete()
         }
-    } else {
-        files?.forEach {
-            accountList.add(it.g())
-        }
+    }
+    dataDir.listFiles()?.also {
+        it.sortBy { f -> f.getCreationTime() }
+    }?.forEach {
+        accountList.add(it.g())
     }
 }

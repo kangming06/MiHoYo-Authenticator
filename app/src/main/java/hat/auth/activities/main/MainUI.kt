@@ -6,7 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -25,6 +27,7 @@ import hat.auth.utils.*
 import hat.auth.utils.TapAPI.confirm
 import hat.auth.utils.TapAPI.getPage
 import hat.auth.utils.ui.CircularProgressDialog
+import hat.auth.utils.ui.TextButton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -46,6 +49,7 @@ fun MainActivity.processException(e: Throwable) {
 @ExperimentalPermissionsApi
 fun MainActivity.UI() {
     val lst = remember { accountList }
+    var showDecryptFinish by remember { mutableStateOf(false) }
     TopAppBar(
         a = lst.size,
         normalDropdownItems = buildDropdownMenuItems {
@@ -55,16 +59,34 @@ fun MainActivity.UI() {
             add("Taptap登录(Beta)") {
                 launcher.launch(Intent(this@UI,TapAuthActivity::class.java))
             }
-        },
-        debugDropdownItems = buildDropdownMenuItems {
-            add("decrypt") {
+            add("解密账号数据") {
                 ioScope.launch {
                     decryptAll()
-                    toast("done.")
+                    showDecryptFinish = true
                 }
             }
+        },
+        debugDropdownItems = buildDropdownMenuItems {
         }
     )
+    if (showDecryptFinish) {
+        AlertDialog(
+            onDismissRequest = {
+                showDecryptFinish = false
+            },
+            title = {
+                Text("解密完毕")
+            },
+            text = {
+                Text("你现在可以进行数据迁移了！下一次打开应用时，所有的账号信息将会被重新加密")
+            },
+            confirmButton = {
+                TextButton("确定") {
+                    showDecryptFinish = false
+                }
+            }
+        )
+    }
     var refreshing by remember { mutableStateOf(false) }
     SwipeRefresh(
         state = rememberSwipeRefreshState(refreshing),
