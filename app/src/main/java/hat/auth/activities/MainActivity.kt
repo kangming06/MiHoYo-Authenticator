@@ -30,7 +30,7 @@ class MainActivity : ComposeActivity() {
         initGeetest()
         registerLauncher()
         if (!loaded) {
-            loadAccountList()
+            loadAccountList(this)
             startAnalytics()
             registerScanCallback()
             loaded = true

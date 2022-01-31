@@ -67,7 +67,9 @@ private fun MainActivity.IND() = Dialog(
     }
 ) {
     var resinRecTime = currentDailyNote.resinRecoveryTime.toInt()
+    var coinRecTime = currentDailyNote.recHomeCoin.toInt()
     var remaining by remember { mutableStateOf(hms(resinRecTime)) }
+    var homeCoinRemaining by remember { mutableStateOf(hms(coinRecTime)) }
     Column(
         modifier = Modifier
             .background(
@@ -100,8 +102,30 @@ private fun MainActivity.IND() = Dialog(
                 while (isDialogShowing) {
                     resinRecTime --
                     remaining = if (resinRecTime >= 0) hms(resinRecTime) else ""
+                    coinRecTime --
+                    homeCoinRemaining = if (coinRecTime >= 0) hms(coinRecTime) else ""
                     delay(1000)
                 }
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            with(currentDailyNote) {
+                Oculi(
+                    resId = R.drawable.ic_home_coin,
+                    text = "${curHomeCoin}/${maxHomeCoin} $homeCoinRemaining",
+                    horizontalSpacedBy = 5.dp,
+                    size = 24.dp
+                )
+                Oculi(
+                    resId = R.drawable.ic_tower,
+                    text = "${remainResinDiscountNum}/${resinDiscountNumLimit}",
+                    horizontalSpacedBy = 5.dp,
+                    size = 24.dp
+                )
             }
         }
         Row(
@@ -235,6 +259,7 @@ private fun MainActivity.IND() = Dialog(
                     runCatching {
                         currentDailyNote = MiHoYoAPI.getDailyNote(currentAccount as MiAccount)
                         resinRecTime = currentDailyNote.resinRecoveryTime.toInt()
+                        coinRecTime = currentDailyNote.recHomeCoin.toInt()
                     }
                 } else {
                     first = false
@@ -267,6 +292,7 @@ private fun Chest(
 private fun Oculi(
     @DrawableRes resId: Int,
     text: String,
+    textYOffset: Dp = (-1).dp,
     size: Dp = 28.dp,
     horizontalSpacedBy: Dp = 0.dp
 ) = Row(
@@ -278,5 +304,5 @@ private fun Oculi(
         contentDescription = null,
         modifier = Modifier.size(size)
     )
-    Text(text)
+    Text(text,Modifier.offset(y = textYOffset))
 }

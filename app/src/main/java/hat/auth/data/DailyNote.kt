@@ -15,6 +15,13 @@ data class DailyNote(
     val resinDiscountNumLimit: Int = 0,
     @SerializedName("remain_resin_discount_num")
     val remainResinDiscountNum: Int = 0,
+    /** 洞天宝钱 **/
+    @SerializedName("current_home_coin")
+    val curHomeCoin: Int = 0,
+    @SerializedName("max_home_coin")
+    val maxHomeCoin: Int = 0,
+    @SerializedName("home_coin_recovery_time")
+    val recHomeCoin: String = "",
     /** 派遣 **/
     @SerializedName("current_expedition_num")
     val currentExpeditionNum: Int = 0,
