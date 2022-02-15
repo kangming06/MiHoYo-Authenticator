@@ -88,7 +88,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("androidx.activity:activity-compose:1.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.1")
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha03")
     implementation("com.google.crypto.tink:tink-android") {
         version {
@@ -98,8 +98,8 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.2")
     implementation("com.github.skydoves:landscapist-coil:1.4.0")
-    implementation("com.microsoft.appcenter:appcenter-crashes:4.3.1")
-    implementation("com.microsoft.appcenter:appcenter-analytics:4.3.1")
+    implementation("com.microsoft.appcenter:appcenter-crashes:4.4.2")
+    implementation("com.microsoft.appcenter:appcenter-analytics:4.4.2")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2")
     implementation("com.geetest.sensebot:sensebot:4.3.4.5") {
         exclude("com.squareup.okhttp3","okhttp")

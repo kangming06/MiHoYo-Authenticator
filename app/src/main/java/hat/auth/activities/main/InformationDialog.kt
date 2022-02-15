@@ -56,8 +56,8 @@ fun MainActivity.InfoDialog() {
     if (isDialogShowing) IND()
 }
 
-private fun hm(i: Int)  = "%02d:%02d".format(i / 3600, (i % 3600) / 60)
-private fun hms(i: Int) = "(%02d:%02d:%02d)".format(i / 3600, (i % 3600) / 60, i % 60)
+private fun hm(i: Long)  = "%02d:%02d".format(i / 3600, (i % 3600) / 60)
+private fun hms(i: Long) = "(%02d:%02d:%02d)".format(i / 3600, (i % 3600) / 60, i % 60)
 
 @Composable
 @Suppress("unused")
@@ -66,8 +66,8 @@ private fun MainActivity.IND() = Dialog(
         isDialogShowing = false
     }
 ) {
-    var resinRecTime = currentDailyNote.resinRecoveryTime.toInt()
-    var coinRecTime = currentDailyNote.recHomeCoin.toInt()
+    var resinRecTime = currentDailyNote.resinRecoveryTime.toLong()
+    var coinRecTime = currentDailyNote.recHomeCoin.toLong()
     var remaining by remember { mutableStateOf(hms(resinRecTime)) }
     var homeCoinRemaining by remember { mutableStateOf(hms(coinRecTime)) }
     Column(
@@ -171,7 +171,7 @@ private fun MainActivity.IND() = Dialog(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val rt = e.remainedTime.toInt()
+                    val rt = e.remainedTime.toLong()
                     Box {
                         Box(
                             modifier = Modifier
@@ -180,8 +180,8 @@ private fun MainActivity.IND() = Dialog(
                                 .border(
                                     width = 2.dp,
                                     color = when (rt) {
-                                        0 -> Color(0xFF84BD1F)
-                                        -1 -> Color(0xFFC4C4C4)
+                                        0L -> Color(0xFF84BD1F)
+                                        -1L -> Color(0xFFC4C4C4)
                                         else -> Color(0xFFDC9F51)
                                     },
                                     shape = CircleShape
@@ -198,8 +198,8 @@ private fun MainActivity.IND() = Dialog(
                     }
                     Text(
                         text = when(rt) {
-                            0 -> "已完成"
-                            -1 -> "未派遣"
+                            0L -> "已完成"
+                            -1L -> "未派遣"
                             else -> hm(rt)
                         },
                         fontSize = 12.sp
@@ -258,8 +258,8 @@ private fun MainActivity.IND() = Dialog(
                 if (!first) {
                     runCatching {
                         currentDailyNote = MiHoYoAPI.getDailyNote(currentAccount as MiAccount)
-                        resinRecTime = currentDailyNote.resinRecoveryTime.toInt()
-                        coinRecTime = currentDailyNote.recHomeCoin.toInt()
+                        resinRecTime = currentDailyNote.resinRecoveryTime.toLong()
+                        coinRecTime = currentDailyNote.recHomeCoin.toLong()
                     }
                 } else {
                     first = false
