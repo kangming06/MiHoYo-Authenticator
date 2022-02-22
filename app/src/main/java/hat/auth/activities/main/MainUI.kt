@@ -49,44 +49,27 @@ fun MainActivity.processException(e: Throwable) {
 @ExperimentalPermissionsApi
 fun MainActivity.UI() {
     val lst = remember { accountList }
-    var showDecryptFinish by remember { mutableStateOf(false) }
     TopAppBar(
         a = lst.size,
         normalDropdownItems = buildDropdownMenuItems {
-            add("米哈游登录") {
+            add("米哈游账号登录") {
                 showMiHuYoLoginDialog()
             }
-            add("Taptap登录(Beta)") {
+            add("Taptap登录") {
                 launcher.launch(Intent(this@UI,TapAuthActivity::class.java))
             }
             add("解密账号数据") {
+                isLoadingDialogShowing = true
                 ioScope.launch {
                     decryptAll()
-                    showDecryptFinish = true
+                    isLoadingDialogShowing = false
+                    showAlertDialog("解密完毕", "你现在可以进行数据迁移了！下一次打开应用时，所有的账号信息将会被重新加密")
                 }
             }
         },
         debugDropdownItems = buildDropdownMenuItems {
         }
     )
-    if (showDecryptFinish) {
-        AlertDialog(
-            onDismissRequest = {
-                showDecryptFinish = false
-            },
-            title = {
-                Text("解密完毕")
-            },
-            text = {
-                Text("你现在可以进行数据迁移了！下一次打开应用时，所有的账号信息将会被重新加密")
-            },
-            confirmButton = {
-                TextButton("确定") {
-                    showDecryptFinish = false
-                }
-            }
-        )
-    }
     var refreshing by remember { mutableStateOf(false) }
     SwipeRefresh(
         state = rememberSwipeRefreshState(refreshing),
@@ -114,15 +97,22 @@ fun MainActivity.UI() {
                             runCatching {
                                 val mA = currentAccount as MiAccount
                                 coroutineScope {
+                                    MiHoYoAPI.changeDataSwitch(2, 3)
                                     val dn = async { MiHoYoAPI.getDailyNote(mA) }
                                     val gr = async { MiHoYoAPI.getGameRecord(mA) }
-                                    val jn = async { with(MiHoYoAPI.getCookieToken(mA.uid,mA.sToken)) {
-                                        MiHoYoAPI.getJournalNote(mA,this)
-                                    } }
+                                    val jn = async {
+                                        with(MiHoYoAPI.getCookieToken(mA.uid,mA.sToken)) {
+                                            MiHoYoAPI.getJournalNote(mA,this)
+                                        }
+                                    }
                                     showInfoDialog(dn.await(),gr.await(),jn.await())
                                 }
                             }.onFailure {
-                                processException(it)
+                                if (it is IllegalStateException && it.message?.contains("not public", true) == true) {
+                                    showAlertDialog("请求失败", "请前往 米游社-我的角色 页面打开实时便笺后重试")
+                                } else {
+                                    showAlertDialog("请求失败", it.message ?: "未知错误")
+                                }
                             }
                             isLoadingDialogShowing = false
                         }
@@ -153,6 +143,7 @@ fun MainActivity.UI() {
     InfoDialog()
     AboutDialog()
     LoadingDialog()
+    NormalAlertDialog()
     MiHoYoLoginDialog()
     DeleteAccountDialog()
     QRCodeScannerDialog()
@@ -240,4 +231,38 @@ fun hideLoadingDialog() {
 @Composable
 fun MainActivity.LoadingDialog() = run {
     if (isLoadingDialogShowing) CircularProgressDialog(loadingDialogText)
+}
+
+private var alertDialogText by mutableStateOf("")
+private var alertDialogTitle by mutableStateOf("")
+private var isAlertDialogShowing by mutableStateOf(false)
+
+fun showAlertDialog(title: String = "", msg: String = "") {
+    if (msg.isNotEmpty()) alertDialogText = msg
+    if (title.isNotEmpty()) alertDialogTitle = title
+    isAlertDialogShowing = true
+}
+
+fun hideAlertDialog() {
+    alertDialogText = ""
+    alertDialogTitle = ""
+    isAlertDialogShowing = false
+}
+
+@Composable
+fun MainActivity.NormalAlertDialog() = run {
+    if (isAlertDialogShowing) AlertDialog(
+        onDismissRequest = ::hideAlertDialog,
+        title = {
+            Text(alertDialogTitle)
+        },
+        text = {
+            Text(alertDialogText)
+        },
+        confirmButton = {
+            TextButton("确定") {
+                hideAlertDialog()
+            }
+        }
+    )
 }

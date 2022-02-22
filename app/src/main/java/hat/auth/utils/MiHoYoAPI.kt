@@ -163,49 +163,15 @@ object MiHoYoAPI {
         }.toMap()
     }
 
-    // TODO: Fix
-    suspend fun changeDataSwitch(gid: Int,sid: Int,to: Boolean/*,sign: Boolean = false*/) {
-        val u = "$RECAPI/card/wapi/changeDataSwitch"
-        val p = arrayOf(
+    suspend fun changeDataSwitch(gid: Int, sid: Int, isPublic: Boolean = true) = getJson(
+        url = "$RECAPI/card/wapi/changeDataSwitch",
+        client = OkClients.SAPI,
+        postBody = jsonBodyOf(
             "game_id" to gid,
-            "is_public" to to,
+            "is_public" to isPublic,
             "switch_id" to sid
         )
-        /*if (sign) {
-            val b = mapOf("preParams" to false,*p,"baseURL" to TAKUMI_GC).toJson()
-            val s = createDynamicSecret(u,b)
-            getJson(
-                url = u,
-                client = OkClients.SAPI,
-                postBody = jsonBodyOf(
-                    "preParams" to false,
-                    *p,
-                    "headers" to mapOf(
-                        "x-rpc-client_type" to BBS_CTYPE.toInt(),
-                        "x-rpc-app_version" to BBS_VERSION,
-                        "DS" to s
-                    ),
-                    "baseURL" to TAKUMI_GC
-                ),
-                headers = mapOf(
-                    "User-Agent" to "Mozilla/5.0 (Linux; Android 12; Phone Build/000; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.101 Mobile Safari/537.36 miHoYoBBS/2.12.1",
-                    "Origin" to "https://webstatic.mihoyo.com",
-                    "Referer" to "https://webstatic.mihoyo.com/app/community-game-records/index.html?bbs_presentation_style=fullscreen"
-                ),
-            ).checkRetCode()
-        } else {*/
-        getJson(
-            url = u,
-            client = OkClients.SAPI,
-            headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Linux; Android 12; Phone Build/000) miHoYoBBS/2.18.0",
-                "Origin" to "https://webstatic.mihoyo.com",
-                "Referer" to "https://webstatic.mihoyo.com/app/community-game-records/index.html?bbs_presentation_style=fullscreen"
-            ),
-            postBody = jsonBodyOf(*p)
-        ).checkRetCode()
-        //}
-    }
+    ).checkRetCode()
 
     suspend fun getDailyNote(u: MiAccount) = getJson(
         url = "$RECAPI/genshin/api/dailyNote?server=cn_gf01&role_id=${u.guid}",

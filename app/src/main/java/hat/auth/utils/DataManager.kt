@@ -99,7 +99,7 @@ infix fun IAccount.removeFrom(list: SnapshotStateList<IAccount>) = getFile().del
 
 suspend fun decryptAll() = withContext(Dispatchers.IO) {
     dataDir.listFiles()?.filterNot { it.nameWithoutExtension.startsWith("decrypted_") }?.forEach {
-        File(dataDir,"decrypted_${it.name}").run {
+        File(dataDir, "decrypted_${it.name}").run {
             Log.d("DataManager", "File ${it.name} decrypt.")
             createNewFile()
             writeText(it.asEncryptedFile().readText())
