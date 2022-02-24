@@ -163,16 +163,6 @@ object MiHoYoAPI {
         }.toMap()
     }
 
-    suspend fun changeDataSwitch(gid: Int, sid: Int, isPublic: Boolean = true) = getJson(
-        url = "$RECAPI/card/wapi/changeDataSwitch",
-        client = OkClients.SAPI,
-        postBody = jsonBodyOf(
-            "game_id" to gid,
-            "is_public" to isPublic,
-            "switch_id" to sid
-        )
-    ).checkRetCode()
-
     suspend fun getDailyNote(u: MiAccount) = getJson(
         url = "$RECAPI/genshin/api/dailyNote?server=cn_gf01&role_id=${u.guid}",
         client = OkClients.SAPI

@@ -1,7 +1,6 @@
 package hat.auth.activities.main
 
 import android.content.Intent
-import android.webkit.CookieManager
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -95,7 +94,6 @@ fun MainActivity.UI() {
                             runCatching {
                                 val mA = currentAccount as MiAccount
                                 coroutineScope {
-                                    MiHoYoAPI.changeDataSwitch(2, 3)
                                     val dn = async { MiHoYoAPI.getDailyNote(mA) }
                                     val gr = async { MiHoYoAPI.getGameRecord(mA) }
                                     val jn = async {
@@ -106,11 +104,7 @@ fun MainActivity.UI() {
                                     showInfoDialog(dn.await(),gr.await(),jn.await())
                                 }
                             }.onFailure {
-                                if (it is IllegalStateException && it.message?.contains("not public", true) == true) {
-                                    showAlertDialog("请求失败", "请前往 米游社-我的角色 页面打开实时便笺后重试")
-                                } else {
-                                    showAlertDialog("请求失败", it.message ?: "未知错误")
-                                }
+                                showAlertDialog("请求失败", it.message ?: "未知错误")
                             }
                             isLoadingDialogShowing = false
                         }
