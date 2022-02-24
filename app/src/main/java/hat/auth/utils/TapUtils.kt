@@ -1,38 +1,24 @@
 package hat.auth.utils
 
-import com.google.gson.JsonObject
+import android.content.Context
+import android.os.Build
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import com.google.gson.annotations.SerializedName
+import hat.auth.Application.Companion.context
 import hat.auth.data.TapAccount
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.Response
+import java.lang.Integer.max
+import java.lang.Integer.min
+import java.net.URLEncoder
+import java.util.*
 
 val TapUrlRegex = Regex("https://www\\.taptap\\.com/qrcode/to\\?url=https%3A%2F%2Fwww\\.taptap\\.com%2Fdevice%3Fqrcode%3D1%26user_code%3D\\w{5}")
-
-data class Profile(val name: String, val avatar: String)
-
-@JvmInline
-value class ConfirmPage(private val s: String) {
-
-    val param get() = PARAM_REGEX.findValue(s).substringAfter('"')
-    val token get() = TOKEN_REGEX.findValue(s).substringAfter('"')
-
-    fun getBasicProfile() = Profile(
-        name   = NAME_REGEX.findValue(s).dropLast(1),
-        avatar = AVATAR_REGEX.findValue(s)
-    )
-
-    private companion object {
-        val NAME_REGEX = Regex("(?<=auth__user-name\">)\\S+<")
-        val PARAM_REGEX = Regex("(?<=name=\"params\")\\s+value=\"[a-zA-z0-9]+(?=\">)")
-        val TOKEN_REGEX = Regex("(?<=name=\"_token\")\\s+value=\"[a-zA-z0-9]+(?=\">)")
-        val AVATAR_REGEX = Regex("https://img3\\.tapimg\\.com/default_avatars/[a-z0-9]+\\.jpg")
-    }
-}
-
-private fun Regex.findValue(s: String) = find(s)!!.value
 
 object TapAPI {
 
@@ -51,35 +37,63 @@ object TapAPI {
             add("client_id","WT6NfH8PsSmZtyXNFb")
             add("info","{\"device_id\":\"Windows PC\"}")
         }
-    ).checkSuccess().toDataClass(TapOAuthCode::class.java)
-
-    suspend fun getPage(url: String,u: TapAccount) = withContext(Dispatchers.IO) {
-        buildHttpRequest {
-            url(url)
-            addCookie(u)
-        }.execute().run {
-            u.copy(
-                sid = getCookieMap().getValue("ACCOUNT_SID")
-            ) to ConfirmPage(getStringBody())
+    ).also {
+        if (!it.get("success").asBoolean) {
+            throw IllegalStateException(it.getAsJsonObject("data").get("msg").asString)
         }
-    }
+    }.getAsJsonObject("data").toDataClass(TapOAuthCode::class.java)
 
-    suspend fun TapOAuthCode.getPage(u: TapAccount) = getPage(url,u)
+    private suspend inline fun <reified R : Any> TapAccount.request(url: String) = request(url) { toDataClass<R>() }
 
-    suspend fun ConfirmPage.confirm(
-        u: TapAccount,
-        cUrl: String = "https://www.taptap.com/device"
+    private suspend inline fun <reified R : Any> TapAccount.post(
+        url: String,
+        formBuilder: FormBody.Builder.() -> Unit
+    ) = FormBody.Builder().apply(formBuilder).build().let { body -> request(url, body) { toDataClass<R>() } }
+
+    private suspend fun <R> TapAccount.request(
+        url: String,
+        body: RequestBody? = null,
+        scope: Response.() -> R
     ) = withContext(Dispatchers.IO) {
         buildHttpRequest {
-            url(cUrl)
-            addCookie(u)
-            postFormBody {
-                add("params",param)
-                add("_token",token)
-                add("scope","public_profile+")
-                add("approve","1")
-            }
-        }.execute(OkClients.NO_REDIRECT).code == 302
+            val acc = this@request
+            val uuid = UUID.randomUUID().toString()
+            url(url)
+            addHeader("Cookie", acc.toString())
+            addHeader("X-UA", "V=1&PN=Accounts&LANG=${acc.locale}&VN_CODE=1&UID=$uuid&VID=${acc.uid}")
+            addHeader("X-CLIENT-XUA", "V=1&PN=TapTap&VN_CODE=223001000&LOC=CN&LANG=${acc.locale}}&CH=default&UID=$uuid&VID=${acc.uid}&$deviceXUA")
+            body?.let { post(body) }
+        }.execute(OkClients.NO_REDIRECT).use(scope)
+    }
+
+    private const val base = "https://accounts.taptap.com/api"
+
+    // NT: Network type
+    //     UNKNOWN  0
+    //     WIFI     1
+    //     NET_2G   2
+    //     NET_3G   3
+    //     NET_4G   4
+    //     NET_5G   5
+    private val deviceXUA by lazy {
+        "NT=1&SR=${getScreenResolution()}&DEB=${Build.MANUFACTURER}&DEM=${Build.MODEL}&OSV=${Build.VERSION.RELEASE}"
+    }
+
+    suspend fun TapAccount.profile() = request<TapProfile>("$base/user/profile")
+
+    suspend fun TapAccount.confirm(qrcodeUrl: String) {
+        val parameters = checkNotNull(qrcodeUrl.toHttpUrl().queryParameterValue(0)) {
+            "无效的二维码"
+        }.toHttpUrl().query.let {
+            checkNotNull(it) { "无效的二维码" }
+        }
+        val info = request<TapOAuth>("$base/oauth2/auth?parameters=${parameters.urlEncoded()}")
+        post<TapOAuthResult>("$base/oauth2/approve") {
+            add("grant_type", info.type)
+            add("client_id", info.client.id)
+            add("scopes", "public_profile")
+            add("continuation_code", info.code)
+        }
     }
 
     data class TapOAuthCode(
@@ -90,23 +104,57 @@ object TapAPI {
         @SerializedName("verification_url")
         val verificationUrl: String = "",
         @SerializedName("qrcode_url")
-        private val qrcodeUrl: String = ""
+        val qrcodeUrl: String = ""
+    )
+
+    private data class TapOAuthResult(
+        @SerializedName("redirect_uri")
+        val redirectTo: String
+    )
+
+    data class TapProfile(
+        @SerializedName("avatar")
+        val avatar: String = "",
+        @SerializedName("nickname")
+        val nickname: String = "",
+        @SerializedName("user_id")
+        val uid: Int = 0
+    )
+
+    private data class TapOAuth(
+        @SerializedName("client")
+        val client: Client,
+        @SerializedName("continuation_code")
+        val code: String = "",
+        @SerializedName("grant_type")
+        val type: String = ""
     ) {
-        val url get() = checkNotNull(qrcodeUrl.toHttpUrl().queryParameterValue(0))
-    }
-
-    private fun Request.Builder.addCookie(u: TapAccount) =
-        addHeader("Cookie",u.toString())
-
-    private fun Response.getCookieMap() = headers("set-cookie").associate { s ->
-        s.split(";")[0].split("=").let { it[0] to it[1] }
+        data class Client(
+            @SerializedName("icon_url")
+            val iconUrl: String = "",
+            @SerializedName("id")
+            val id: String = "",
+            @SerializedName("name")
+            val name: String = "",
+            @SerializedName("status")
+            val status: String = ""
+        )
     }
 
     private fun Response.getStringBody() = notNullBody.string()
 
-    private fun JsonObject.checkSuccess(): JsonObject = getAsJsonObject("data").apply {
-        if (!this@checkSuccess.get("success").asBoolean) {
-            throw IllegalStateException(get("msg").asString)
-        }
+    @Suppress("DEPRECATION")
+    private fun getScreenResolution() = DisplayMetrics().also {
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getMetrics(it)
+    }.run { widthPixels to heightPixels }.let { (w, h) ->
+        "${min(w, h)}x${max(w, h)}"
+    }
+
+    private fun String.urlEncoded() = URLEncoder.encode(this, "utf-8")
+
+    private inline fun <reified T : Any> Response.toDataClass() = getStringBody().toJsonObject().let { obj ->
+        if (obj["code"].asString != "OK") {
+            throw IllegalStateException(obj.getAsJsonObject("error")["reason"].asString)
+        } else obj["data"].toDataClass(T::class.java)
     }
 }

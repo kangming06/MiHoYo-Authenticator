@@ -2,14 +2,15 @@ package hat.auth.utils
 
 import android.app.Activity
 import android.content.Context
+import androidx.annotation.Keep
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.google.gson.annotations.SerializedName
 import hat.auth.Application.Companion.context
 import hat.auth.data.IAccount
 import hat.auth.data.MiAccount
 import hat.auth.data.TapAccount
 import hat.auth.security.asEncryptedFile
-import hat.auth.utils.TapAPI.getPage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +20,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 
 val accountList = mutableStateListOf<IAccount>()
+val removedTapAccounts = mutableStateListOf<DeprecatedTapAccount>()
 
 private val dataDir by lazy {
     context.getDir("accounts",Context.MODE_PRIVATE)
@@ -42,9 +44,9 @@ suspend fun refreshAccount() {
                 cl[i] = it
             }
         } else if (old is TapAccount) {
-            with(TapAPI.getCode().getPage(old)) {
-                val p = second.getBasicProfile()
-                old.copy(name = p.name, avatar = p.avatar).takeIf { old != it }?.let {
+            with(TapAPI) {
+                val p = old.profile()
+                old.copy(name = p.nickname, avatar = p.avatar).takeIf { old != it }?.let {
                     cl[i] = it
                 }
             }
@@ -64,7 +66,7 @@ private fun File.g() = with(asEncryptedFile().readText()) {
         'm' -> {
             gson.fromJson(this,MiAccount::class.java)
         }
-        't' -> {
+        'p' -> {
             gson.fromJson(this,TapAccount::class.java)
         }
         else -> throw IllegalArgumentException()
@@ -74,7 +76,7 @@ private fun File.g() = with(asEncryptedFile().readText()) {
 private fun IAccount.getFile() = run {
     when (this) {
         is MiAccount  -> File(dataDir,"m_$uid")
-        is TapAccount -> File(dataDir,"t_$uid")
+        is TapAccount -> File(dataDir,"p_$uid")
         else -> throw IllegalArgumentException()
     }
 }
@@ -108,7 +110,20 @@ suspend fun decryptAll() = withContext(Dispatchers.IO) {
     }
 }
 
+@Keep
+data class DeprecatedTapAccount(
+    @SerializedName("c")
+    override val uid: String = "",
+    @SerializedName("i")
+    override val name: String = "null"
+): IAccount(uid, name, "")
+
 private fun migrate() {
+    val oldTapAccounts = dataDir.listFiles()?.filter { f -> f.nameWithoutExtension.startsWith("t_") }
+    oldTapAccounts?.forEach {
+        removedTapAccounts.add(gson.fromJson(it.asEncryptedFile().readText(), DeprecatedTapAccount::class.java))
+        it.delete()
+    }
     val df = dataDir.listFiles()?.filter { f -> f.nameWithoutExtension.startsWith("decrypted_") }
     if (df?.isNotEmpty() == true) {
         df.forEach {
@@ -122,4 +137,6 @@ private fun migrate() {
     }?.forEach {
         accountList.add(it.g())
     }
+    removedTapAccounts.add(DeprecatedTapAccount("123456", "name1"))
+    removedTapAccounts.add(DeprecatedTapAccount("654321", "name2"))
 }

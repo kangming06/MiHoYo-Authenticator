@@ -1,6 +1,7 @@
 package hat.auth.activities.main
 
 import android.content.Intent
+import android.webkit.CookieManager
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,14 +25,11 @@ import hat.auth.data.IAccount
 import hat.auth.data.MiAccount
 import hat.auth.data.TapAccount
 import hat.auth.utils.*
-import hat.auth.utils.TapAPI.confirm
-import hat.auth.utils.TapAPI.getPage
 import hat.auth.utils.ui.CircularProgressDialog
 import hat.auth.utils.ui.TextButton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import okhttp3.HttpUrl.Companion.toHttpUrl
 
 var currentAccount by mutableStateOf(IAccount("","",""))
 
@@ -121,12 +119,13 @@ fun MainActivity.UI() {
                         ioScope.launch {
                             isLoadingDialogShowing = true
                             runCatching {
-                                (currentAccount as? TapAccount)?.let {
-                                    val c = TapAPI.getCode()
-                                    val s = with(c.getPage(it)) {
-                                        second.confirm(first,c.verificationUrl)
+                                (currentAccount as? TapAccount)?.let { account ->
+                                    with(TapAPI) {
+                                        val curl = getCode().qrcodeUrl
+                                        Log.d("TapV2", curl)
+                                        account.confirm(curl)
                                     }
-                                    toast("Success: $s")
+                                    toast("Success.")
                                 }
                             }.onFailure {
                                 processException(it)
@@ -147,6 +146,11 @@ fun MainActivity.UI() {
     MiHoYoLoginDialog()
     DeleteAccountDialog()
     QRCodeScannerDialog()
+    if (removedTapAccounts.isNotEmpty()) {
+        val accountsText = removedTapAccounts.joinToString("\n") { "${it.name} (${it.uid})"}
+        showAlertDialog("注意", "由于Taptap相关API变动，你需要重新登录以下账号：\n\n${accountsText}")
+        removedTapAccounts.clear()
+    }
     LaunchedEffect(refreshing) {
         if (refreshing) {
             runCatching {
@@ -163,23 +167,19 @@ fun MainActivity.onCookieReceived(s: String) {
     ioScope.launch {
         isLoadingDialogShowing = true
         runCatching {
-            val a0 = with(cookieStringToMap(s)) {
+            val account = with(cookieStringToMap(s)) {
                 TapAccount(
-                    acw = getValue("acw_tc"),
                     locale = getValue("locale"),
-                    uid = getValue("user_id"),
-                    logFrom = getValue("ACCOUNT_LOGGED_USER_FROM_WWW"),
-                    tokenFrom = getValue("CONSOLES_TOKEN_FROM_WWW"),
-                    xToken = getValue("XSRF-TOKEN"),
-                    session = getValue("tap_sess")
+                    session = getValue("ACCOUNTS_SESS")
                 )
             }
-            check(!a0.exists()) { "已经存在相同UID的账户了" }
-            with(TapAPI.getCode().getPage(a0)) {
-                val p = second.getBasicProfile()
-                first.copy(
-                    name = p.name,
-                    avatar = p.avatar
+            check(!account.exists()) { "已经存在相同UID的账户了" }
+            with(TapAPI) {
+                val p = account.profile()
+                account.copy(
+                    name = p.nickname,
+                    avatar = p.avatar,
+                    uid = p.uid.toString()
                 )
             } addTo accountList
         }.onFailure {
@@ -194,15 +194,14 @@ fun MainActivity.registerScanCallback() = registerScanCallback { result ->
         val u = result.text
         isLoadingDialogShowing = true
         runCatching {
-            when (currentAccount) {
+            when (val account = currentAccount) { // smart cast
                 is MiAccount -> {
                     MiHoYoAPI.scanQRCode(u)
-                    MiHoYoAPI.confirmQRCode(currentAccount as MiAccount,u)
+                    MiHoYoAPI.confirmQRCode(account, u)
                 }
                 is TapAccount -> {
-                    val au = checkNotNull(u.toHttpUrl().queryParameterValue(0))
-                    with(getPage(au,currentAccount as TapAccount)) {
-                        second.confirm(first)
+                    with(TapAPI) {
+                        account.confirm(u)
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown account type.")

@@ -36,25 +36,10 @@ data class TapAccount(
     @CookieName("locale")
     @SerializedName("a")
     val locale: String = "zh_CN",
-    @CookieName("acw_tc")
-    @SerializedName("b")
-    val acw: String = "",
-    @CookieName("ACCOUNT_SID")
-    @SerializedName("d")
-    val sid: String = "",
-    @CookieName("tap_sess")
+    @CookieName("ACCOUNTS_SESS")
     @SerializedName("e")
     val session: String = "",
-    @CookieName("XSRF-TOKEN")
-    @SerializedName("f")
-    val xToken: String = "",
-    @CookieName("ACCOUNT_LOGGED_USER_FROM_WWW")
-    @SerializedName("g")
-    val logFrom: String = "",
-    @CookieName("CONSOLES_TOKEN_FROM_WWW")
-    @SerializedName("h")
-    val tokenFrom: String = "",
-    @CookieName("user_id")
+    @CookieName("ACCOUNTS_USER_ID")
     @SerializedName("c")
     override val uid: String = "",
     @SerializedName("i")

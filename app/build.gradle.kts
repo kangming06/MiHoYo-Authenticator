@@ -13,8 +13,8 @@ android {
         applicationId = "hat.auth"
         minSdk = 26
         targetSdk = 31
-        versionCode = 9
-        versionName = "1.1.5"
+        versionCode = 10
+        versionName = "1.1.6"
         multiDexEnabled = true
         resourceConfigurations.apply {
             clear()
@@ -79,7 +79,7 @@ android {
 
 dependencies {
 
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.google.android.material:material:1.5.0")
     implementation("com.google.accompanist:accompanist-permissions:0.20.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.20.0")
