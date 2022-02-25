@@ -137,6 +137,4 @@ private fun migrate() {
     }?.forEach {
         accountList.add(it.g())
     }
-    removedTapAccounts.add(DeprecatedTapAccount("123456", "name1"))
-    removedTapAccounts.add(DeprecatedTapAccount("654321", "name2"))
 }
