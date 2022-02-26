@@ -2,6 +2,8 @@ package hat.auth.activities.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.text.trimmedLength
+import com.microsoft.appcenter.analytics.Analytics
 import hat.auth.activities.MainActivity
 import hat.auth.data.EncryptedPassword
 import hat.auth.utils.*
@@ -75,18 +78,22 @@ private fun MainActivity.MLD() = Dialog(
                 page = false
             )
         }
-        Column(
+        Row(
             modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp, top = 10.dp)
         ) {
             AnimatedVisibility(
-                visible = tabPageV
+                visible = tabPageV,
+                enter = expandHorizontally(),
+                exit = shrinkHorizontally()
             ) {
                 Column {
                     CodeLoginLayout(focusToCodeTextField)
                 }
             }
             AnimatedVisibility(
-                visible = !tabPageV
+                visible = !tabPageV,
+                enter = expandHorizontally(),
+                exit = shrinkHorizontally()
             ) {
                 Column {
                     PasswordLoginLayout()
@@ -170,6 +177,7 @@ private object CL {
                 MiHoYoAuth.login(phone, code).also {
                     check(!it.exists()) { "已经存在相同UID的账户了" }
                 } addTo accountList
+                Analytics.trackEvent("AddAccount-MiHiYo")
                 resetCodeLayout()
                 hideMiHoYoLoginDialog()
             }.onFailure {
@@ -184,11 +192,11 @@ lateinit var cfr: FocusRequester
 
 @ExperimentalComposeUiApi
 @Composable
-private fun MainActivity.CodeLoginLayout(focusState: Boolean) = CL.run {
+private fun MainActivity.CodeLoginLayout(focusState: Boolean) = with(CL) {
     cfr = FocusRequester()
     val phoneFocusRequester = FocusRequester()
     SingleTextField(
-        label = "手机号码",
+        label = if (tabPageV) "手机号码" else "",
         value = phone,
         isError = isPhoneError,
         onValueChange = ovc@{
@@ -208,7 +216,7 @@ private fun MainActivity.CodeLoginLayout(focusState: Boolean) = CL.run {
     )
     val skc = LocalSoftwareKeyboardController.current
     SingleTextField(
-        label = "验证码",
+        label = if (tabPageV) "验证码" else "",
         value = code,
         isError = isCodeError,
         keyboardOptions = KeyboardOptions(
@@ -268,6 +276,7 @@ private object PL {
                         MiHoYoAuth.login(name, EncryptedPassword(password),this).also {
                             check(!it.exists()) { "已经存在相同UID的账户了" }
                         } addTo accountList
+                        Analytics.trackEvent("AddAccount-MiHiYo")
                     }
                     resetPasswordLayout()
                     hideMiHoYoLoginDialog()
@@ -285,11 +294,11 @@ private object PL {
 }
 
 @Composable
-private fun MainActivity.PasswordLoginLayout() = PL.run {
+private fun MainActivity.PasswordLoginLayout() = with(PL) {
     val ufc = FocusRequester()
     val pfc = FocusRequester()
     SingleTextField(
-        label = "用户名/邮箱",
+        label = if (!tabPageV) "用户名/邮箱" else "",
         isError = isUsernameError,
         value = name,
         modifier = Modifier
@@ -308,7 +317,7 @@ private fun MainActivity.PasswordLoginLayout() = PL.run {
         )
     )
     SingleTextField(
-        label = "密码",
+        label = if (!tabPageV) "密码" else "",
         isError = isPasswordError,
         value = password,
         modifier = Modifier

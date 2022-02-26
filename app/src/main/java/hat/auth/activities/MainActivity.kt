@@ -8,6 +8,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.microsoft.appcenter.analytics.Analytics
+import hat.auth.BuildConfig
 import hat.auth.activities.main.*
 import hat.auth.utils.*
 import hat.auth.utils.GT3.initGeetest
@@ -32,6 +34,9 @@ class MainActivity : ComposeActivity() {
         if (!loaded) {
             loadAccountList(this)
             startAnalytics()
+            Analytics.trackEvent("AppStartup", buildMap {
+                put("version", BuildConfig.VERSION_NAME)
+            })
             registerScanCallback()
             loaded = true
         }

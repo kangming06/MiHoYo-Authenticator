@@ -18,6 +18,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.microsoft.appcenter.analytics.Analytics
 import hat.auth.activities.MainActivity
 import hat.auth.activities.TapAuthActivity
 import hat.auth.data.IAccount
@@ -176,6 +177,7 @@ fun MainActivity.onCookieReceived(s: String) {
                     uid = p.uid.toString()
                 )
             } addTo accountList
+            Analytics.trackEvent("AddAccount-Taptap")
         }.onFailure {
             processException(it)
         }
@@ -192,10 +194,12 @@ fun MainActivity.registerScanCallback() = registerScanCallback { result ->
                 is MiAccount -> {
                     MiHoYoAPI.scanQRCode(u)
                     MiHoYoAPI.confirmQRCode(account, u)
+                    Analytics.trackEvent("LoginConfirm-MiHoYo")
                 }
                 is TapAccount -> {
                     with(TapAPI) {
                         account.confirm(u)
+                        Analytics.trackEvent("LoginConfirm-Taptap")
                     }
                 }
                 else -> throw IllegalArgumentException("Unknown account type.")
