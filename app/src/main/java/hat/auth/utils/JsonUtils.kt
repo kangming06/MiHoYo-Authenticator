@@ -27,6 +27,8 @@ suspend fun getJson(
     getText(url,client,headers,postBody).toJsonObject()
 }
 
+inline fun <reified T: Any> String.toDataClass(): T = Gson().fromJson(this, T::class.java)
+
 fun <T: Any> JsonElement.toDataClass(clazz: Class<T>): T = Gson().fromJson(this,clazz)
 
 fun JsonObject.toOrgJson() = JSONObject(Gson().fromJson(this,Map::class.java))
