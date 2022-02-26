@@ -13,8 +13,8 @@ android {
         applicationId = "hat.auth"
         minSdk = 26
         targetSdk = 31
-        versionCode = 10
-        versionName = "1.1.6"
+        versionCode = 11
+        versionName = "1.1.7"
         multiDexEnabled = true
         resourceConfigurations.apply {
             clear()
