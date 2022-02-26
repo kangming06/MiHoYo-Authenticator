@@ -1,9 +1,7 @@
 package hat.auth.data
 
-import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-@Keep
 data class GameRecord(
     /*@SerializedName("homes")
     val homes: List<Home> = emptyList(),*/
@@ -13,7 +11,6 @@ data class GameRecord(
     val worldExplorations: List<WorldExploration> = emptyList()*/
 ) {
 
-    @Keep
     data class Stats(
         /*@SerializedName("achievement_number")
         val achievementNumber: Int = -1,

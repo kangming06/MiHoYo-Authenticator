@@ -158,7 +158,7 @@ private object CL {
                     cfr.requestFocus()
                     toast("发送成功.")
                 }.onFailure {
-                    processException(it)
+                    processException("HoYoLogin-SendCode", it)
                 }
                 hideLoadingDialog()
             },
@@ -181,7 +181,7 @@ private object CL {
                 resetCodeLayout()
                 hideMiHoYoLoginDialog()
             }.onFailure {
-                processException(it)
+                processException("HoYoLogin-SMSLogin", it)
             }
             hideLoadingDialog()
         }
@@ -281,7 +281,7 @@ private object PL {
                     resetPasswordLayout()
                     hideMiHoYoLoginDialog()
                 }.onFailure {
-                    processException(it)
+                    processException("HoYoLogin-PwdLogin", it)
                 }
                 hideLoadingDialog()
             },

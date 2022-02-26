@@ -1,10 +1,7 @@
 package hat.auth.data
 
-
 import com.google.gson.annotations.SerializedName
-import androidx.annotation.Keep
 
-@Keep
 data class JourneyNotes(
     @SerializedName("data_last_month")
     val dataLastMonth: Int = 0,
@@ -23,7 +20,6 @@ data class JourneyNotes(
     @SerializedName("optional_month")
     val optionalMonth: List<Int> = emptyList(),
 ) {
-    @Keep
     data class DayData(
         @SerializedName("current_mora")
         val currentMora: Int = 0,
@@ -35,7 +31,6 @@ data class JourneyNotes(
         val lastPrimogems: Int = 0
     )
 
-    @Keep
     data class MonthData(
         @SerializedName("current_mora")
         val currentMora: Int = 0,
@@ -54,7 +49,6 @@ data class JourneyNotes(
         @SerializedName("primogems_rate")
         val primogemsRate: Int = 0
     ) {
-        @Keep
         data class GroupBy(
             @SerializedName("action")
             val action: String = "",

@@ -1,9 +1,7 @@
 package hat.auth.data
 
-import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-@Keep
 open class IAccount(
     @Ignore
     open val uid:String,
@@ -13,7 +11,6 @@ open class IAccount(
     open val avatar: String
 )
 
-@Keep
 data class MiAccount(
     @SerializedName("a")
     val guid: String = "0",
@@ -29,9 +26,8 @@ data class MiAccount(
     override val name: String = "null",
     @SerializedName("g")
     override val avatar: String = "https://img-static.mihoyo.com/avatar/avatar1.png"
-): IAccount(uid,name,avatar)
+): IAccount(uid, name, avatar)
 
-@Keep
 data class TapAccount(
     @CookieName("locale")
     @SerializedName("a")

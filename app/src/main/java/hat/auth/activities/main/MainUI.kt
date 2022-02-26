@@ -19,6 +19,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
 import hat.auth.activities.MainActivity
 import hat.auth.activities.TapAuthActivity
 import hat.auth.data.IAccount
@@ -33,8 +34,9 @@ import kotlinx.coroutines.launch
 
 var currentAccount by mutableStateOf(IAccount("","",""))
 
-fun MainActivity.processException(e: Throwable) {
+fun MainActivity.processException(source: String, e: Throwable) {
     Log.e(tr = e)
+    Crashes.trackError(e, mapOf("source" to source), null)
     toast(e.message ?: "未知错误")
 }
 
@@ -123,7 +125,7 @@ fun MainActivity.UI() {
                                     toast("Success.")
                                 }
                             }.onFailure {
-                                processException(it)
+                                processException("TapScanTest", it)
                             }
                             isLoadingDialogShowing = false
                         }
@@ -151,7 +153,7 @@ fun MainActivity.UI() {
             runCatching {
                 refreshAccount()
             }.onFailure {
-                processException(it)
+                processException("AccountRefresh", it)
             }
             refreshing = false
         }
@@ -179,7 +181,7 @@ fun MainActivity.onCookieReceived(s: String) {
             } addTo accountList
             Analytics.trackEvent("AddAccount-Taptap")
         }.onFailure {
-            processException(it)
+            processException("TapAccountLogin", it)
         }
         isLoadingDialogShowing = false
     }
@@ -206,7 +208,7 @@ fun MainActivity.registerScanCallback() = registerScanCallback { result ->
             }
             toast("登录成功")
         }.onFailure {
-            processException(it)
+            processException("LoginConfirm", it)
         }
         isLoadingDialogShowing = false
     }

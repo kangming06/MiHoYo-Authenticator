@@ -1,9 +1,7 @@
 package hat.auth.data
 
-import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-@Keep
 data class UserGameRole(
     @SerializedName("game_biz")
     val biz: String,

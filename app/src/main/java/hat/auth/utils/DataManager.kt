@@ -2,7 +2,6 @@ package hat.auth.utils
 
 import android.app.Activity
 import android.content.Context
-import androidx.annotation.Keep
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.google.gson.annotations.SerializedName
@@ -110,7 +109,6 @@ suspend fun decryptAll() = withContext(Dispatchers.IO) {
     }
 }
 
-@Keep
 data class DeprecatedTapAccount(
     @SerializedName("c")
     override val uid: String = "",
