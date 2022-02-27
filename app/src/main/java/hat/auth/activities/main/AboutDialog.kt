@@ -82,7 +82,7 @@ private fun MainActivity.AD() = Dialog(
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("913777414", "913777414")
                 clipboard.setPrimaryClip(clip)
-                toast("调用失败，群号已复制到剪贴板")
+                toast("群号已复制到剪贴板")
             }
         }
         Component(
@@ -102,18 +102,14 @@ private fun MainActivity.AD() = Dialog(
  * @param key 由官网生成的key
  * @return 返回true表示呼起手Q成功，返回false表示呼起失败
  ******************/
+@Suppress("SpellCheckingInspection")
 private fun MainActivity.joinQQGroup(key: String) = runCatching {
     val url = URLEncoder.encode("http://qm.qq.com/cgi-bin/qm/qr?from=app&p=android&jump_from=webapi&k=", "utf-8")
-    Intent().apply {
-        // 此Flag可根据具体产品需要自定义，如设置，则在加群界面按返回，返回手Q主界面，不设置，按返回会返回到呼起产品界面
-        // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        data = Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=$url$key")
-    }.launch()
+    Intent().let {
+        it.data = Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=$url$key")
+        startActivity(it)
+    }
 }.isSuccess
-
-private fun Intent.launch() {
-    context.startActivity(this)
-}
 
 @Composable
 private fun Component(
