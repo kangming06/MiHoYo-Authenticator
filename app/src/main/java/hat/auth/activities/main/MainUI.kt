@@ -166,7 +166,7 @@ fun MainActivity.onCookieReceived(s: String) {
         runCatching {
             val account = with(cookieStringToMap(s)) {
                 TapAccount(
-                    locale = getValue("locale"),
+                    locale = getOrDefault("locale", "zh_CN"),
                     session = getValue("ACCOUNTS_SESS")
                 )
             }
