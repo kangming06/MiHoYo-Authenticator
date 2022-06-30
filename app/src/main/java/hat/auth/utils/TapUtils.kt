@@ -1,11 +1,7 @@
 package hat.auth.utils
 
-import android.content.Context
 import android.os.Build
-import android.util.DisplayMetrics
-import android.view.WindowManager
 import com.google.gson.annotations.SerializedName
-import hat.auth.Application.Companion.context
 import hat.auth.data.TapAccount
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,8 +9,6 @@ import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody
 import okhttp3.Response
-import java.lang.Integer.max
-import java.lang.Integer.min
 import java.net.URLEncoder
 import java.util.*
 
@@ -144,11 +138,7 @@ object TapAPI {
     private fun Response.getStringBody() = notNullBody.string()
 
     @Suppress("DEPRECATION")
-    private fun getScreenResolution() = DisplayMetrics().also {
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getMetrics(it)
-    }.run { widthPixels to heightPixels }.let { (w, h) ->
-        "${min(w, h)}x${max(w, h)}"
-    }
+    private fun getScreenResolution() = "1080x2340"
 
     private fun String.urlEncoded() = URLEncoder.encode(this, "utf-8")
 

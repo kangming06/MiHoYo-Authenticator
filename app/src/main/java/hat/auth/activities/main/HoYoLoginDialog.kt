@@ -250,12 +250,8 @@ private object PL {
 
     var name     by mutableStateOf("")
     var password by mutableStateOf("")
-    var isUsernameError by mutableStateOf(false)
     var isPasswordError by mutableStateOf(false)
 
-    fun checkUsername() = (name.matches(PhoneNumRegex) || name.contains('@')).not().apply {
-        isUsernameError = this
-    }
     fun checkPassword() = (password.trimmedLength() !in 8..15).apply {
         isPasswordError = this
     }
@@ -266,7 +262,7 @@ private object PL {
     }
 
     fun MainActivity.onGo()  {
-        if (checkUsername() || checkPassword()) return
+        if (checkPassword()) return
         GT3.init(
             ctx = this,
             afterTest = { params ->
@@ -299,14 +295,12 @@ private fun MainActivity.PasswordLoginLayout() = with(PL) {
     val pfc = FocusRequester()
     SingleTextField(
         label = if (!tabPageV) "用户名/邮箱" else "",
-        isError = isUsernameError,
         value = name,
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(ufc),
         onValueChange = {
             name = it
-            if (isUsernameError) isUsernameError = checkUsername()
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,

@@ -20,7 +20,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import hat.auth.Application.Companion.context
 import hat.auth.BuildConfig
 import hat.auth.activities.MainActivity
 import hat.auth.utils.*

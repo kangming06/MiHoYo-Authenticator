@@ -29,13 +29,18 @@ class TapWebViewClient(
         let ia = null
         const ib = document.location.pathname
         if (ib === "/login") {
-            ia = window.setInterval(() => {
+            ta = window.setInterval(() => {
                 try {
                     document.getElementsByClassName("checkbox__label").forEach((it) => { it.removeAttribute("href") })
-                    document.getElementsByClassName("login-page__content__social-login")[0].style.display = "none"
-                    window.clearInterval(ia)
+                    window.clearInterval(ta)
                 } catch (ignored) { }
-            }, 200)
+            }, 50)
+            tb = window.setInterval(() => {
+                try {
+                    document.getElementsByClassName("login-page__content__social-login")[0].style.display = "none"
+                    window.clearInterval(tb)
+                } catch (ignored) { }
+            }, 50)
         }
         """.trimIndent()
 }

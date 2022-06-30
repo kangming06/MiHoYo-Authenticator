@@ -3,18 +3,18 @@ plugins {
     id("com.android.application")
 }
 
-val vCompose = "1.2.0-alpha01"
+val vCompose = "1.2.0-beta03"
 
 android {
 
-    compileSdk = 31
+    compileSdk = 32
 
     defaultConfig {
         applicationId = "hat.auth"
         minSdk = 26
         targetSdk = 31
-        versionCode = 12
-        versionName = "1.1.8"
+        versionCode = 13
+        versionName = "1.1.9"
         multiDexEnabled = true
         resourceConfigurations.apply {
             clear()
@@ -80,15 +80,15 @@ android {
 dependencies {
 
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("com.google.android.material:material:1.5.0")
+    implementation("com.google.android.material:material:1.6.1")
     implementation("com.google.accompanist:accompanist-permissions:0.20.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.20.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
 
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("androidx.activity:activity-compose:1.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.1")
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.activity:activity-compose:1.5.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha03")
     implementation("com.google.crypto.tink:tink-android") {
         version {
