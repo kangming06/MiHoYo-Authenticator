@@ -1,9 +1,13 @@
 package hat.auth.activities.main
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +32,7 @@ import hat.auth.data.JourneyNotes
 import hat.auth.data.MiAccount
 import hat.auth.utils.MiHoYoAPI
 import hat.auth.utils.getDrawableAsImageBitmap
+import hat.auth.utils.toast
 import kotlinx.coroutines.delay
 
 private val unknownAvatar by lazy {
@@ -37,18 +42,22 @@ private val unknownAvatar by lazy {
 private var currentDailyNote    by mutableStateOf(DailyNote())
 private var currentGameRecord   by mutableStateOf(GameRecord())
 private var currentJourneyNotes by mutableStateOf(JourneyNotes())
+private var accountCookie by mutableStateOf(String());
 
 private var isDialogShowing by mutableStateOf(false)
 
 fun showInfoDialog(
     note: DailyNote,
     record: GameRecord,
-    journeyNotes: JourneyNotes
+    journeyNotes: JourneyNotes,
+    cookie: String
 ) {
     currentDailyNote    = note
     currentGameRecord   = record
     currentJourneyNotes = journeyNotes
     isDialogShowing = true
+    accountCookie=cookie
+
 }
 
 @Composable
@@ -79,6 +88,25 @@ private fun MainActivity.IND() = Dialog(
             .padding(15.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(accountCookie, accountCookie)
+                clipboard.setPrimaryClip(clip)
+                toast("cookie已复制到剪贴板")
+            }),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Oculi(
+                resId = R.drawable.ic_cookie,
+                text = "点此获取cookie",
+                horizontalSpacedBy = 0.dp,
+                size = 24.dp
+            )
+
+        }
+        Divider()
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -221,9 +249,18 @@ private fun MainActivity.IND() = Dialog(
                     resId = R.drawable.ic_geoculus,
                     text = "${geoculusNumber}/131"
                 )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
                 Oculi(
                     resId = R.drawable.ic_electroculus,
                     text = "${electroculusNumber}/181"
+                )
+                Oculi(
+                    resId = R.drawable.ic_dendroculus,
+                    text = "${dendroculusNumber}/271"
                 )
             }
             Row(
@@ -306,3 +343,25 @@ private fun Oculi(
     )
     Text(text,Modifier.offset(y = textYOffset))
 }
+//@Composable
+//private fun ClickableOculi(
+//    @DrawableRes resId: Int,
+//    text: String,
+//    textYOffset: Dp = (-1).dp,
+//    size: Dp = 28.dp,
+//    horizontalSpacedBy: Dp = 0.dp,
+//    onClick:() -> Unit
+//) = Row(
+//    verticalAlignment = Alignment.CenterVertically,
+//    horizontalArrangement = Arrangement.spacedBy(horizontalSpacedBy),
+//    modifier = Modifier
+//        .fillMaxWidth()
+//        .clickable(onClick = onClick)
+//) {
+//    Image(
+//        painter = painterResource(resId),
+//        contentDescription = null,
+//        modifier = Modifier.size(size)
+//    )
+//    Text(text,Modifier.offset(y = textYOffset))
+//}

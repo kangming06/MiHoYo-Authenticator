@@ -32,6 +32,8 @@ data class GameRecord(
         val geoculusNumber: Int = -1,
         @SerializedName("electroculus_number")
         val electroculusNumber: Int = -1,
+        @SerializedName("dendroculus_number")
+        val dendroculusNumber: Int = -1,
         @SerializedName("common_chest_number")
         val commonChestNumber: Int = -1,
         @SerializedName("exquisite_chest_number")

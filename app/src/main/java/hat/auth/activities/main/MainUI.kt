@@ -104,7 +104,8 @@ fun MainActivity.UI() {
                                             MiHoYoAPI.getJournalNote(mA,this)
                                         }
                                     }
-                                    showInfoDialog(dn.await(),gr.await(),jn.await())
+                                    val co = async {"ltoken=${mA.sToken}; ltuid=${mA.uid}; cookie_token=${MiHoYoAPI.getCookieToken(mA.uid,mA.sToken)}; account_id=${mA.uid};"}
+                                    showInfoDialog(dn.await(),gr.await(),jn.await(),co.await())
                                 }
                             }.onFailure {
                                 showAlertDialog("请求失败", it.message ?: "未知错误")
